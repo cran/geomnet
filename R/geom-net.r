@@ -1,5 +1,6 @@
 #' Geom for network visualization within the ggplot2 framework
 #'
+
 #' @inheritParams ggplot2::stat_identity
 #' @param stat character string of the network stat corresponding to geom_net.
 #' @param alpha numeric value of alpha blending of vertices.
@@ -11,7 +12,13 @@
 #' @param fiteach logical value. Should the network be fit in each of the panels separately, or is there going to be one fit for all?
 #' @param label logical value. Include labels for (all) nodes. labelcolour specifies colour of labels, if they should not be the same as the nodes. labels are taken from the from_id variable, unless a label variable is given.
 #' @param labelcolour character of colour for the labels.
+#' @param labelgeom character. Which ggplot2 \code{geom} to use to draw the labels. Either "text" or "label".
+#' @param repel logical value. If \code{TRUE}, uses the ggrepel package geoms to draw the node labels instead of the ggplot2 geoms.
+#' @param fontsize numeric. If labels are present, changes the size of the label.
+#' @param colour colour for nodes
 #' @param ecolour colour for edges.
+#' @param size node size.
+#' @param linewidth width of the edges. 
 #' @param directed logical value. Should an arrow be drawn from 'from' to 'to' node?
 #' @param selfies logical value. Should self-references be shown (by drawing a circle adjacent to the corresponding node)? defaults to FALSE.
 #' @param arrow what kind of arrow should be drawn? See specification of function \code{arrow} in grid package
@@ -115,6 +122,7 @@
 #' p + geom_net(layout="fruchtermanreingold", label=TRUE, vjust=-0.5, aes(linewidth=degree/5))
 #'
 #' ## College Football Games in the Fall 2000 regular season
+#' # Hello world! 
 #' # Source: http://www-personal.umich.edu/~mejn/netdata/
 #' data(football)
 #' ftnet <- merge(football$edges, football$vertices, by.x="from", by.y="label", all=TRUE)
@@ -123,15 +131,18 @@
 #'   scale_colour_brewer("Conference", palette="Paired") + theme_net() +
 #'   theme(legend.position="bottom")
 
-geom_net <- function (mapping = NULL, data = NULL, stat = "net", position = "identity", show.legend = NA, na.rm = TRUE, inherit.aes = TRUE,  alpha = 0.25,
-                      layout="kamadakawai", layout.par=list(), fiteach=FALSE,  label=FALSE, ecolour=NULL, ealpha=NULL, arrow=NULL, arrowgap=0.01, directed = FALSE, arrowsize=1,
-                      labelcolour=NULL, vertices=NULL, selfies = FALSE, ...) {
+geom_net <- function (mapping = NULL, data = NULL, stat = "net", position = "identity", show.legend = NA, na.rm = TRUE, inherit.aes = TRUE,  
+                      layout="kamadakawai", layout.par=list(), directed = FALSE, fiteach=FALSE,  selfies = FALSE,
+                      colour = NULL, size = NULL, alpha = 0.25, 
+                      ecolour=NULL, ealpha=NULL, linewidth=NULL, arrow=NULL, arrowgap=0.01, arrowsize=1,
+                      label=FALSE, labelcolour=NULL, labelgeom = 'text', repel = FALSE, fontsize = NULL,
+                       vertices=NULL, ...) {
     ggplot2::layer(
     geom = GeomNet, mapping = mapping,  data = data, stat = stat,
     position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-    params = list(na.rm = na.rm, layout=layout, layout.par=layout.par, fiteach=fiteach, label=label,
-                  ecolour = ecolour, ealpha=ealpha, arrow=arrow, arrowgap=arrowgap, directed=directed,
-                  arrowsize=arrowsize, 
+    params = list(na.rm = na.rm, layout=layout, layout.par=layout.par, fiteach=fiteach, label=label, labelgeom=labelgeom,
+                  ecolour = ecolour, ealpha=ealpha, arrow=arrow, arrowgap=arrowgap, directed=directed, repel = repel,
+                  arrowsize=arrowsize,
                   labelcolour=labelcolour, vertices=vertices, selfies = selfies,
                   ...)
   )
@@ -177,7 +188,9 @@ GeomNet <- ggplot2::ggproto("GeomNet", ggplot2::Geom,
   },
 
   setup_data = function(data, params, mapping) {
+#    cat("setup_data geom_net\n")
 
+#browser()
     data$from <- as.character(data$from)
     data$to <- as.character(data$to)
     selfie <- (data$from == data$to) & (params$selfies == TRUE)
@@ -192,8 +205,8 @@ GeomNet <- ggplot2::ggproto("GeomNet", ggplot2::Geom,
   },
 
   draw_panel = function(data, panel_scales, coord,  ecolour=NULL, ealpha=NULL, arrow=NULL, arrowgap=0.01,
-                        directed=FALSE, arrowsize=1, 
-                        label=FALSE, labelcolour=NULL, selfies = FALSE) {
+                        directed=FALSE, arrowsize=1, repel = FALSE,
+                        label=FALSE, labelgeom='text', labelcolour=NULL, selfies = FALSE) {
 
  #   browser()
     data$self <- as.character(data$to) == as.character(data$from)
@@ -202,6 +215,7 @@ GeomNet <- ggplot2::ggproto("GeomNet", ggplot2::Geom,
       xend = data$xend,
       y = data$y,
       yend = data$yend,
+      weight = data$weight,
       colour = ecolour %||% ifelse(data$.samegroup, data$colour, "grey60"),
       size = data$linewidth %||% (data$size / 4),
       nodesize = data$size,
@@ -240,14 +254,17 @@ GeomNet <- ggplot2::ggproto("GeomNet", ggplot2::Geom,
       edges <- transform(
         edges,
         xend = x + (1-arrowgap)*(xend-x),
-        yend = y + (1-arrowgap)*(yend-y)
+        yend = y + (1-arrowgap)*(yend-y),
+        x = x + arrowgap*(xend-x),
+        y = y + arrowgap*(yend-y)
       )
     } else arrow=NULL
 #    browser()
-    if (any(data$curvature != 0))
+    if (any(data$curvature != 0)){
       edges_draw <- GeomCurve$draw_panel(edges, panel_scales,
                                          coord, arrow=arrow, curvature=data$curvature[1], angle=90)
-    else edges_draw <- GeomSegment$draw_panel(edges, panel_scales, coord, arrow)
+    }
+      else {edges_draw <- GeomSegment$draw_panel(edges, panel_scales, coord, arrow, lineend = "round")}
 
 #    browser()
 
@@ -288,13 +305,29 @@ GeomNet <- ggplot2::ggproto("GeomNet", ggplot2::Geom,
         size = data$fontsize,
         angle = data$angle,
         alpha = data$alpha,
-        vjust = data$vjust,
         hjust = data$hjust,
+        fill = data$colour,
+        vjust = data$vjust,
         stringsAsFactors = FALSE
       )
       labels <- unique(labels)
-      label_grob <- GeomText$draw_panel(labels, panel_scales, coord)
-    }
+#       if (labelgeom=='label'){
+#       label_grob <- GeomLabel$draw_panel(labels, panel_scales, coord)
+#       }
+#       else {label_grob <- GeomText$draw_panel(labels, panel_scales, coord)}
+#     }
+      
+      if (labelgeom=='label'){
+        if(repel){
+          label_grob <- ggrepel::GeomLabelRepel$draw_panel(labels, panel_scales, coord)
+        } else {label_grob <- ggplot2::GeomLabel$draw_panel(labels, panel_scales, coord)}
+      } else {
+        if(repel){
+          label_grob <- ggrepel::GeomTextRepel$draw_panel(labels, panel_scales, coord)
+        } else{label_grob <- ggplot2::GeomText$draw_panel(labels, panel_scales, coord)}
+      }
+      
+  }
 
     ggplot2:::ggname("geom_net", grobTree(
       edges_draw,

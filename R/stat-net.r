@@ -9,16 +9,23 @@
 StatNet <- ggplot2::ggproto("StatNet", ggplot2::Stat,
   required_aes = c("from_id", "to_id"),
   non_missing_aes = "weight",
-
   setup_params = function(data, params) {
-#    browser()
+  #  browser()
 #    print(str(params))
 
     params
   },
 
-  setup_data = function(self, data, params) {
+#   setup_params = function(data, params) {
+#     cat("setup_params\n")
+# #    browser()
+# #    print(str(params))
+#
+#     params
+#   },
 
+  setup_data = function(self, data, params) {
+#cat("setup_data stat_net\n")
     fiteach=params$fiteach
     if (!is.factor(data$from_id)) data$from_id <- factor(data$from_id)
     if (!is.factor(data$to_id)) data$to_id <- factor(data$to_id)
@@ -40,15 +47,18 @@ StatNet <- ggplot2::ggproto("StatNet", ggplot2::Stat,
       warning(sprintf("There are %d nodes without node information: %s\n\nDid you use all=T in merge?\n\n", length(only_to), paste(only_to, collapse=", ")))
 
     if (! is.null(params$seed)) set.seed(params$seed)
-    if (fiteach) return(data)
+#    if (fiteach) return(data)
 
-    data$.samegroup <- FALSE
+#    data$.samegroup <- FALSE
 
-    self$compute_network(data, layout=params$layout, layout.par=params$layout.par)
+#    self$compute_network(data, layout=params$layout, layout.par=params$layout.par)
+    data
   },
 
 compute_network = function(data, layout="kamadakawai", layout.par=list()) {
-  require(dplyr)
+# cat("compute_network\n")
+#  browser()
+    require(dplyr)
   edges <- subset(data, to_id != "..NA..")[,c('from_id', 'to_id')]
   edges <- edges %>% group_by(from_id, to_id) %>% summarise(wt = n())
 
@@ -60,7 +70,7 @@ compute_network = function(data, layout="kamadakawai", layout.par=list()) {
     edgelist <- sna::as.edgelist.sna(net) #sna pkg
     edgelist[,3] <- sqrt(edges$wt)  # doesn't change anything for wt == const
   } else {
-    edgelist <- network::as.matrix.network.edgelist(net) #network pkg
+    edgelist <- sna::as.edgelist.sna(net) # switched from network to sna for consistency
   }
 #  else {
 #    m <- network::as.matrix.network.adjacency(net)
@@ -102,23 +112,54 @@ compute_network = function(data, layout="kamadakawai", layout.par=list()) {
 
     edges <- rbind(edges, fromonly[, names(edges)])
   }
-#browser()
-#  edges <- edges %>% group_by(from, to) %>% mutate(n = n())
+  edges <- edges %>% group_by(from, to) %>% mutate(weight = n())
   unique(edges)
 },
-  compute_panel = function(self, data, scales, params, na.rm = FALSE,
+
+compute_panel = function(self, data, scales, na.rm = FALSE,
                            layout="kamadakawai", layout.par=list(), fiteach=FALSE,
                            vertices=NULL) {
-    if (fiteach) data <- self$compute_network(data, layout=layout, layout.par=layout.par)
+# cat("compute_panel in stat_net\n")
+#  browser()
+#    if (fiteach)
+      data <- self$compute_network(data, layout=layout, layout.par=layout.par)
 
     #    data <- plyr::ddply(data, "group", plyr::mutate, .samegroup = to %in% unique(from))
     if (any(data$group) != -1)
       data <- data %>% group_by(group) %>% mutate(.samegroup = to %in% unique(from))
 
-    data
-  }
+   # browser()
+    data.frame(data)
+  },
 
-)
+compute_layer = function(self, data, params, panel, na.rm = FALSE,
+                         layout="kamadakawai", layout.par=list(), fiteach=FALSE,
+                         vertices=NULL) {
+#  cat("compute_layer in stat_net\n")
+#  browser()
+
+  if (params$fiteach) {
+    # only do this plyr statement in the case that fiteach is true.
+    plyr::ddply(data, "PANEL", function(data) {
+      if (ggplot2:::empty(data)) return(data.frame())
+
+      scales <- ggplot2:::panel_scales(panel, data$PANEL[1])
+      self$compute_panel(data = data, scales = scales,
+                         na.rm=params$na.rm, layout=params$layout,
+                         layout.par=params$layout.par, fiteach=params$fiteach,
+                         vertices=params$vertices)
+    })
+  }
+  else {
+    if (ggplot2:::empty(data)) return(data.frame())
+
+    scales <- ggplot2:::panel_scales(panel, data$PANEL[1])
+    self$compute_panel(data = data, scales = scales,
+                       na.rm=params$na.rm, layout=params$layout,
+                       layout.par=params$layout.par, fiteach=params$fiteach,
+                       vertices=params$vertices)
+  }
+})
 
 #' @rdname geom_net
 #'
@@ -130,7 +171,8 @@ stat_net <- function(mapping = NULL, data = NULL, geom = "point",
                      position = "identity", show.legend = NA,
                      inherit.aes = TRUE, layout="kamadakawai", layout.par=list(), fiteach=FALSE, vertices=NULL,
                      na.rm=FALSE, ...) {
-  ggplot2::layer(
+# browser()
+    ggplot2::layer(
     stat = StatNet, data = data, mapping = mapping, geom = geom, position = position,
     show.legend = show.legend, inherit.aes = inherit.aes,
     params = list(layout=layout, layout.par=layout.par, fiteach=fiteach,
