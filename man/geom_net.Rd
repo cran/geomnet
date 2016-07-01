@@ -12,11 +12,10 @@
 geom_net(mapping = NULL, data = NULL, stat = "net",
   position = "identity", show.legend = NA, na.rm = TRUE,
   inherit.aes = TRUE, layout = "kamadakawai", layout.par = list(),
-  directed = FALSE, fiteach = FALSE, selfies = FALSE, colour = NULL,
-  size = NULL, alpha = 0.25, ecolour = NULL, ealpha = NULL,
-  linewidth = NULL, arrow = NULL, arrowgap = 0.01, arrowsize = 1,
-  label = FALSE, labelcolour = NULL, labelgeom = "text", repel = FALSE,
-  fontsize = NULL, vertices = NULL, ...)
+  directed = FALSE, fiteach = FALSE, selfies = FALSE, alpha = 0.25,
+  ecolour = NULL, ealpha = NULL, arrow = NULL, arrowgap = 0.01,
+  arrowsize = 1, label = FALSE, labelcolour = NULL, labelgeom = "text",
+  repel = FALSE, vertices = NULL, ...)
 
 GeomNet
 
@@ -74,17 +73,11 @@ the default plot specification, e.g. \code{\link{borders}}.}
 
 \item{selfies}{logical value. Should self-references be shown (by drawing a circle adjacent to the corresponding node)? defaults to FALSE.}
 
-\item{colour}{colour for nodes}
-
-\item{size}{node size.}
-
 \item{alpha}{numeric value of alpha blending of vertices.}
 
 \item{ecolour}{colour for edges.}
 
 \item{ealpha}{numeric value of alpha blending of edges.}
-
-\item{linewidth}{width of the edges.}
 
 \item{arrow}{what kind of arrow should be drawn? See specification of function \code{arrow} in grid package}
 
@@ -99,8 +92,6 @@ the default plot specification, e.g. \code{\link{borders}}.}
 \item{labelgeom}{character. Which ggplot2 \code{geom} to use to draw the labels. Either "text" or "label".}
 
 \item{repel}{logical value. If \code{TRUE}, uses the ggrepel package geoms to draw the node labels instead of the ggplot2 geoms.}
-
-\item{fontsize}{numeric. If labels are present, changes the size of the label.}
 
 \item{vertices}{data frame containing vertex information. Usage is a bit awkward, because every variable in this data set can only be used with the ggplot2 double dot representation ..varname.. Better: use a joint to include this information in the data dataframe}
 
@@ -120,6 +111,7 @@ A data frame with additional columns:
 Geom for network visualization within the ggplot2 framework
 }
 \examples{
+\dontrun{
 library(ggplot2)
 data(blood)
 p <- ggplot(data = blood$edges, aes(from_id = from, to_id = to))
@@ -140,12 +132,14 @@ p + geom_net(aes(size=Predominance, colour=rho, shape=rho, linetype=group_to),
              linewidth=0.75, label =TRUE, labelcolour="black") +
     facet_wrap(~Ethnicity) +
     scale_colour_brewer(palette="Set2")
-ggplot(data = blood$edges, aes(from_id = from, to_id = to)) +
+gg <- ggplot(data = blood$edges, aes(from_id = from, to_id = to)) +
   geom_net(colour = "darkred", layout = "circle", label = TRUE, size = 15,
          directed = TRUE, vjust = 0.5, labelcolour = "grey80",
          arrowsize = 1.5, linewidth = 0.5, arrowgap = 0.05,
          selfies = TRUE, ecolour = "grey40") +
   theme_net()
+gg
+dframe <- ggplot_build(gg)$data[[1]] # contains calculated node and edge values
 
 #Madmen Relationships
 data(madmen)
@@ -188,7 +182,6 @@ emailnet <- merge(subset(email$edges, nrecipients < 54), employee,
 ggplot(data = emailnet, aes(from_id = From, to_id = to)) +
   geom_net(aes(colour= CurrentEmploymentType), linewidth=0.5) +
   scale_colour_brewer(palette="Set2")
-
 #facet by day
 ggplot(data = emailnet, aes(from_id = From, to_id = to)) +
   geom_net(aes(colour= CurrentEmploymentType), linewidth=0.5, fiteach=TRUE) +
@@ -213,7 +206,7 @@ p + geom_net(layout="fruchtermanreingold", label=TRUE, vjust=-0.5)
 p + geom_net(layout="fruchtermanreingold", label=TRUE, vjust=-0.5, aes(linewidth=degree/5))
 
 ## College Football Games in the Fall 2000 regular season
-# Hello world! 
+# Hello world!
 # Source: http://www-personal.umich.edu/~mejn/netdata/
 data(football)
 ftnet <- merge(football$edges, football$vertices, by.x="from", by.y="label", all=TRUE)
@@ -221,6 +214,7 @@ p <- ggplot(data=ftnet, aes(from_id=from, to_id=to))
 p + geom_net(aes(colour=value), linewidth=0.75, size=4.5, ecolour="grey80") +
   scale_colour_brewer("Conference", palette="Paired") + theme_net() +
   theme(legend.position="bottom")
+  }
 }
 \keyword{datasets}
 
