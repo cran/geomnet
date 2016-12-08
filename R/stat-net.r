@@ -5,6 +5,9 @@
 #' @rdname geom_net
 #' @importFrom sna as.edgelist.sna
 #' @importFrom network as.matrix.network.edgelist
+#' @importFrom dplyr group_by
+#' @importFrom dplyr mutate
+#' @importFrom dplyr summarise
 #' @export
 StatNet <- ggplot2::ggproto("StatNet", ggplot2::Stat,
   required_aes = c("from_id", "to_id"),
@@ -18,7 +21,7 @@ StatNet <- ggplot2::ggproto("StatNet", ggplot2::Stat,
 
 #   setup_params = function(data, params) {
 #     cat("setup_params\n")
-# #    browser()
+# #    #browser()
 # #    print(str(params))
 #
 #     params
@@ -26,19 +29,23 @@ StatNet <- ggplot2::ggproto("StatNet", ggplot2::Stat,
 
   setup_data = function(self, data, params) {
 #cat("setup_data stat_net\n")
+    #browser()
     fiteach=params$fiteach
-    if (!is.factor(data$from_id)) data$from_id <- factor(data$from_id)
-    if (!is.factor(data$to_id)) data$to_id <- factor(data$to_id)
+#    if (!is.factor(data$from_id)) data$from_id <- factor(data$from_id)
+#    if (!is.factor(data$to_id)) data$to_id <- factor(data$to_id)
 
     if (!is.null(params$vertices)) {
       data <- merge(data, params$vertices, by.x="from_id", by.y="label", all=TRUE)
     }
 
     # we want to keep all of the values that are NA in the second edge - give them a special value, so we can pull them out later
-    levels <- levels(data$to_id)
+    levels <- levels(as.factor(data$to_id))
     data$to_id <- as.character(data$to_id)
-    data$to_id[is.na(data$to_id)] <- "..NA.."
-    data$to_id <- factor(data$to_id, levels = c(levels, "..NA.."))
+    # add .selfie variable to get true selfies out later.
+    data$.selfie <- as.character(data$from_id) == data$to_id
+    data$to_id[is.na(data$to_id)] <- as.character(data$from_id)[is.na(data$to_id)]
+#    data$to_id[is.na(data$to_id)] <- "..NA.."
+#    data$to_id <- factor(data$to_id, levels = c(levels, "..NA.."))
 
     # check that all vertices are included in the data set
     only_to <- setdiff(levels(data$to_id), levels(data$from_id))
@@ -55,14 +62,22 @@ StatNet <- ggplot2::ggproto("StatNet", ggplot2::Stat,
     data
   },
 
-compute_network = function(data, layout="kamadakawai", layout.par=list()) {
+compute_network = function(data, layout.alg="kamadakawai", layout.par=list(), singletons = TRUE) {
 # cat("compute_network\n")
-#  browser()
-    require(dplyr)
-  edges <- subset(data, to_id != "..NA..")[,c('from_id', 'to_id')]
-  edges <- edges %>% group_by(from_id, to_id) %>% summarise(wt = n())
+# browser()
 
-  net <- network::as.network(edges[,1:2], matrix.type = "edgelist")
+  edges <- subset(data, to_id != "..NA..")[,c('from_id', 'to_id')]
+  if (!singletons){
+    all_singletons <- edges$from_id[edges$from_id == edges$to_id]
+    true_singletons <- all_singletons[!all_singletons %in% edges$to_id[edges$from_id != edges$to_id]]
+    edges <- edges[!edges$from_id %in% true_singletons,]
+  }
+  edges <- dplyr::group_by(edges, from_id, to_id)
+  edges <- dplyr::summarise(edges, wt = n())
+
+    # there should not be any missing values at this point, but just make sure
+  if (any(is.na(edges$from_id))) message(sprintf("%d missing values excluded\n", sum(is.na(edges$from_id))))
+  net <- network::as.network(na.omit(edges[,1:2]), matrix.type = "edgelist")
 
   edgeweights <- diff(range(edges$wt)) != 0
   if (edgeweights) {
@@ -76,7 +91,7 @@ compute_network = function(data, layout="kamadakawai", layout.par=list()) {
 #    m <- network::as.matrix.network.adjacency(net)
 #  }
 
-  if (is.null(layout)) {
+  if (is.null(layout.alg)) {
     if (is.null(data$x) || is.null(data$y)) stop("If no layout mechanism is specified, x and y coordinates have to be given\n\n")
     vert.coord <- data[, c("x", "y", "from_id")]
     vert.coord <- subset(vert.coord, from_id %in% attr(edgelist, "vnames"))
@@ -86,9 +101,12 @@ compute_network = function(data, layout="kamadakawai", layout.par=list()) {
     names(vert.coord)[3] <- "label"
   } else {
   #print("it would be nice at this point to check, whether layout is one of the supported functions, and if not,
-  require(sna)
-  layoutFun <- paste('gplot.layout.',layout,sep='')
-  vert.coord <- data.frame(do.call(layoutFun, list(edgelist, layout.par = layout.par)))
+# browser()
+  layoutFun <- getFromNamespace(paste('gplot.layout.',layout.alg,sep=''), asNamespace("sna"))
+#  requireNamespace("sna")
+#  layoutFun <- paste('gplot.layout.',layout.alg,sep='')
+#  vert.coord <- data.frame(do.call(layoutFun, list(edgelist, layout.par = layout.par)))
+  vert.coord <- data.frame(layoutFun(edgelist, layout.par = layout.par))
 
   vert.coord$label <- attr(edgelist, "vnames") #row.names(m)
   vert.coord$X1 <- as.numeric(scale(vert.coord$X1, center=min(vert.coord$X1), scale=diff(range(vert.coord$X1)))) # center nodes
@@ -112,70 +130,75 @@ compute_network = function(data, layout="kamadakawai", layout.par=list()) {
 
     edges <- rbind(edges, fromonly[, names(edges)])
   }
-  edges <- edges %>% group_by(from, to) %>% mutate(weight = n())
+  edges <- mutate(group_by(edges, from, to), weight = n())
   unique(edges)
 },
 
 compute_panel = function(self, data, scales, na.rm = FALSE,
-                           layout="kamadakawai", layout.par=list(), fiteach=FALSE,
-                           vertices=NULL) {
-# cat("compute_panel in stat_net\n")
+                         layout.alg="kamadakawai", layout.par=list(), singletons=TRUE,
+                         fiteach=FALSE, vertices=NULL) {
+#  cat("compute_panel in stat_net\n")
 #  browser()
 #    if (fiteach)
-      data <- self$compute_network(data, layout=layout, layout.par=layout.par)
+      data <- self$compute_network(data, layout.alg =layout.alg, layout.par=layout.par, singletons=singletons)
 
     #    data <- plyr::ddply(data, "group", plyr::mutate, .samegroup = to %in% unique(from))
-    if (any(data$group) != -1)
-      data <- data %>% group_by(group) %>% mutate(.samegroup = to %in% unique(from))
+    if (any(data$group) != -1) {
+      data <- mutate(group_by(data, group), .samegroup = to %in% unique(from))
+    }
 
-   # browser()
+   # #browser()
     data.frame(data)
   },
 
-compute_layer = function(self, data, params, panel, na.rm = FALSE,
-                         layout="kamadakawai", layout.par=list(), fiteach=FALSE,
+compute_layer = function(self, data, params, layout, na.rm = FALSE, layout.alg,
+                        # layout="kamadakawai", layout.par=list(),
+                         fiteach=FALSE,
                          vertices=NULL) {
 #  cat("compute_layer in stat_net\n")
-#  browser()
+#  #browser()
 
   if (params$fiteach) {
     # only do this plyr statement in the case that fiteach is true.
     plyr::ddply(data, "PANEL", function(data) {
       if (ggplot2:::empty(data)) return(data.frame())
-
-      scales <- ggplot2:::panel_scales(panel, data$PANEL[1])
+#browser()
+      scales <- #ggplot2:::Layout$get_scales(data$PANEL[1])
+        list(x = NULL, y = NULL)
       self$compute_panel(data = data, scales = scales,
-                         na.rm=params$na.rm, layout=params$layout,
+                         na.rm=params$na.rm, layout.alg=params$layout.alg,
                          layout.par=params$layout.par, fiteach=params$fiteach,
-                         vertices=params$vertices)
+                         vertices=params$vertices, singletons=params$singletons)
     })
   }
   else {
     if (ggplot2:::empty(data)) return(data.frame())
-
-    scales <- ggplot2:::panel_scales(panel, data$PANEL[1])
+#browser()
+    scales <- list(x = NULL, y = NULL)
+    #scales <- ggplot2:::Layout$get_scales(data$PANEL[1])
     self$compute_panel(data = data, scales = scales,
-                       na.rm=params$na.rm, layout=params$layout,
+                       na.rm=params$na.rm, layout.alg=params$layout.alg,
                        layout.par=params$layout.par, fiteach=params$fiteach,
-                       vertices=params$vertices)
+                       vertices=params$vertices, singletons=params$singletons)
   }
 })
 
 #' @rdname geom_net
 #'
+#' @param geom \code{geom_net}, the geom attached to \code{stat_net} is called \code{"net"}.
 #' @return A data frame with additional columns:
 #'   \item{x, y}{coordinates of the nodes, beginning of edges,}
 #'   \item{xend, yend}{coordinates end points of edges.}
 #' @export
-stat_net <- function(mapping = NULL, data = NULL, geom = "point",
+stat_net <- function(mapping = NULL, data = NULL, geom = "net",
                      position = "identity", show.legend = NA,
-                     inherit.aes = TRUE, layout="kamadakawai", layout.par=list(), fiteach=FALSE, vertices=NULL,
+                     inherit.aes = TRUE, layout.alg="kamadakawai", layout.par=list(), fiteach=FALSE, vertices=NULL, singletons = TRUE, 
                      na.rm=FALSE, ...) {
-# browser()
+# #browser()
     ggplot2::layer(
     stat = StatNet, data = data, mapping = mapping, geom = geom, position = position,
     show.legend = show.legend, inherit.aes = inherit.aes,
-    params = list(layout=layout, layout.par=layout.par, fiteach=fiteach,
+    params = list(layout.alg=layout.alg, layout.par=layout.par, fiteach=fiteach, singletons=singletons,
                   na.rm=na.rm, vertices=vertices, ...
     )
   )

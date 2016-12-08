@@ -6,25 +6,26 @@
 \alias{StatNet}
 \alias{geom_net}
 \alias{stat_net}
-\title{Geom for network visualization within the ggplot2 framework}
+\title{Networks}
 \format{An object of class \code{GeomNet} (inherits from \code{Geom}, \code{ggproto}) of length 6.}
 \usage{
 geom_net(mapping = NULL, data = NULL, stat = "net",
-  position = "identity", show.legend = NA, na.rm = TRUE,
-  inherit.aes = TRUE, layout = "kamadakawai", layout.par = list(),
-  directed = FALSE, fiteach = FALSE, selfies = FALSE, alpha = 0.25,
-  ecolour = NULL, ealpha = NULL, arrow = NULL, arrowgap = 0.01,
-  arrowsize = 1, label = FALSE, labelcolour = NULL, labelgeom = "text",
-  repel = FALSE, vertices = NULL, ...)
+  position = "identity", show.legend = NA, na.rm = FALSE,
+  inherit.aes = TRUE, layout.alg = "kamadakawai", layout.par = list(),
+  directed = FALSE, fiteach = FALSE, selfloops = FALSE,
+  singletons = TRUE, alpha = 0.25, ecolour = NULL, ealpha = NULL,
+  arrow = NULL, arrowgap = 0.01, arrowsize = 1, labelon = FALSE,
+  labelcolour = NULL, labelgeom = "text", repel = FALSE,
+  vertices = NULL, ...)
 
 GeomNet
 
 StatNet
 
-stat_net(mapping = NULL, data = NULL, geom = "point",
+stat_net(mapping = NULL, data = NULL, geom = "net",
   position = "identity", show.legend = NA, inherit.aes = TRUE,
-  layout = "kamadakawai", layout.par = list(), fiteach = FALSE,
-  vertices = NULL, na.rm = FALSE, ...)
+  layout.alg = "kamadakawai", layout.par = list(), fiteach = FALSE,
+  vertices = NULL, singletons = TRUE, na.rm = FALSE, ...)
 }
 \arguments{
 \item{mapping}{Set of aesthetic mappings created by \code{\link{aes}} or
@@ -46,7 +47,8 @@ plot. You must supply \code{mapping} if there is no plot mapping.}
    the plot data. The return value must be a \code{data.frame.}, and
    will be used as the layer data.}
 
-\item{stat}{character string of the network stat corresponding to geom_net.}
+\item{stat}{The statistical transformation to use on the data for this
+layer, as a string.}
 
 \item{position}{Position adjustment, either as a string, or the result of
 a call to a position adjustment function.}
@@ -55,52 +57,54 @@ a call to a position adjustment function.}
 \code{NA}, the default, includes if any aesthetics are mapped.
 \code{FALSE} never includes, and \code{TRUE} always includes.}
 
-\item{na.rm}{If \code{FALSE} (the default), removes missing values with
-a warning. If \code{TRUE} silently removes missing values.}
+\item{na.rm}{If \code{FALSE}, the default, missing values are removed with
+a warning. If \code{TRUE}, missing values are silently removed.}
 
 \item{inherit.aes}{If \code{FALSE}, overrides the default aesthetics,
 rather than combining with them. This is most useful for helper functions
 that define both data and aesthetics and shouldn't inherit behaviour from
 the default plot specification, e.g. \code{\link{borders}}.}
 
-\item{layout}{character value specifying the layout algorithm to use. Defaults to "kamadakawai". See \code{?gplot.layout} in the package sna for other choices.}
+\item{layout.alg}{character. Value specifying the layout algorithm to use. Defaults to "kamadakawai". See \code{?sna::}\code{\link[sna]{gplot.layout}} documentation for more choices.}
 
-\item{layout.par}{list of parameters detailing algorithmic specs. Default parameters are used initially. See \code{?gplot.layout} in the package sna for other choices.}
+\item{layout.par}{list. Parameters detailing algorithmic specs. Default parameters from \pkg{sna} are used initially. See  \code{?sna::}\code{\link[sna]{gplot.layout}} documentation for all options corresponding to all layouts.}
 
-\item{directed}{logical value. Should an arrow be drawn from 'from' to 'to' node?}
+\item{directed}{logical value. Should an arrow be drawn pointing to the \code{to_id} node? Default is \code{FALSE}.}
 
-\item{fiteach}{logical value. Should the network be fit in each of the panels separately, or is there going to be one fit for all?}
+\item{fiteach}{logical. Should the network be fit in each of the panels separately, or is there going to be one fit for all?}
 
-\item{selfies}{logical value. Should self-references be shown (by drawing a circle adjacent to the corresponding node)? defaults to FALSE.}
+\item{selfloops}{logical value. Should loops (self-referencing edges) be shown (by drawing a circle adjacent to the corresponding node)? Default is \code{FALSE}.}
 
-\item{alpha}{numeric value of alpha blending of vertices.}
+\item{singletons}{logical. Should singletons (nodes with no incoming or outgoing ties) be plotted? Default is \code{TRUE}.}
 
-\item{ecolour}{colour for edges.}
+\item{alpha}{numeric. Value from 0-1 of alpha blending of nodes.}
 
-\item{ealpha}{numeric value of alpha blending of edges.}
+\item{ecolour}{character. Colour for edges.}
 
-\item{arrow}{what kind of arrow should be drawn? See specification of function \code{arrow} in grid package}
+\item{ealpha}{numeric. Value from 0-1 of alpha blending of edges.}
+
+\item{arrow}{what kind of arrow should be drawn? See \code{?grid::}\code{\link[grid]{arrow}} for more.}
 
 \item{arrowgap}{numeric value between 0 and 1 specifying how much (as a proportion of the line length) earlier the line segment should be stopped drawing before reaching the target node. This parameters is only regarded in directed networks.}
 
-\item{arrowsize}{numeric value (non-negative). How big should the arrow be drawn? Multiplicative of a pre-specified unit.}
+\item{arrowsize}{numeric. How big should the arrow be drawn? Multiplicative of the default, 10 points.}
 
-\item{label}{logical value. Include labels for (all) nodes. labelcolour specifies colour of labels, if they should not be the same as the nodes. labels are taken from the from_id variable, unless a label variable is given.}
+\item{labelon}{logical. Include labels for all nodes.  Labels are taken from the \code{from_id} variable, unless a \code{label} aesthetic is provided.}
 
-\item{labelcolour}{character of colour for the labels.}
+\item{labelcolour}{character. Colour for the labels. If this argument is not specified, labels have the same colour as the nodes.}
 
-\item{labelgeom}{character. Which ggplot2 \code{geom} to use to draw the labels. Either "text" or "label".}
+\item{labelgeom}{character. Which \pkg{ggplot2} \code{geom} should be used to draw the labels? Either \code{"text"} or \code{"label"}. Default is \code{"text"}}
 
-\item{repel}{logical value. If \code{TRUE}, uses the ggrepel package geoms to draw the node labels instead of the ggplot2 geoms.}
+\item{repel}{logical. If \code{TRUE}, uses the \pkg{ggrepel} package geoms to draw the node labels instead of the ggplot2 geoms.}
 
-\item{vertices}{data frame containing vertex information. Usage is a bit awkward, because every variable in this data set can only be used with the ggplot2 double dot representation ..varname.. Better: use a joint to include this information in the data dataframe}
+\item{vertices}{data frame. Dataset containing vertex information. Usage is a bit awkward, because every variable in this data set can only be used with the ggplot2 double dot representation ..varname.. Better: use the \code{\link{fortify.edgedf}} method}
 
 \item{...}{other arguments passed on to \code{\link{layer}}. These are
 often aesthetics, used to set an aesthetic to a fixed value, like
 \code{color = "red"} or \code{size = 3}. They may also be parameters
 to the paired geom/stat.}
 
-\item{geom}{The geometric object to use display the data}
+\item{geom}{\code{geom_net}, the geom attached to \code{stat_net} is called \code{"net"}.}
 }
 \value{
 A data frame with additional columns:
@@ -108,109 +112,123 @@ A data frame with additional columns:
   \item{xend, yend}{coordinates end points of edges.}
 }
 \description{
-Geom for network visualization within the ggplot2 framework
+The net geom is used visualize networks within the \pkg{ggplot2} framework. \code{geom_net} combines the many parts of a network visualization
+into a single layer in \pkg{ggplot2}. It makes use of various other geoms, including but not limited to, \code{\link[ggplot2]{geom_point}}, \code{\link[ggplot2]{geom_segment}}, and \code{\link[ggplot2]{geom_text}}.
+}
+\section{Aesthetics}{
+
+\code{geom_net} understands the following aesthetics (required aesthetics are in bold):
+\itemize{
+ \item \strong{\code{from_id}}
+ \item \strong{\code{to_id}}
+ \item \code{x}
+ \item \code{y} 
+ \item \code{alpha}  
+ \item \code{colour} 
+ \item \code{fontsize}
+ \item \code{group}
+ \item \code{label}
+ \item \code{linetype} 
+ \item \code{linewidth} 
+ \item \code{shape}
+ \item \code{size} 
+ }
 }
 \examples{
 \dontrun{
-library(ggplot2)
+library(geomnet)
 data(blood)
 p <- ggplot(data = blood$edges, aes(from_id = from, to_id = to))
 p + geom_net(vertices=blood$vertices, aes(colour=..type..)) + theme_net()
 
-bloodnet <- merge(blood$edges, blood$vertices, by.x="from", by.y="label", all=TRUE)
-p <- ggplot(data = bloodnet, aes(from_id = from, to_id = to))
+bloodnet <- fortify(as.edgedf(blood$edges), blood$vertices)
+p <- ggplot(data = bloodnet, aes(from_id = from_id, to_id = to_id))
 p + geom_net()
 p + geom_net(aes(colour=rho)) + theme_net()
-p + geom_net(aes(colour=rho), label=TRUE, vjust = -0.5)
-p + geom_net(aes(colour=rho), label=TRUE, vjust=-0.5, labelcolour="black",
-             directed=TRUE, curvature=0.2) + theme_net()
-p + geom_net(colour = "orange", layout = 'circle', size = 6)
-p + geom_net(colour = "orange", layout = 'circle', size = 6, linewidth=.75)
-p + geom_net(colour = "orange", layout = 'circle', size = 0, linewidth=.75,
+p + geom_net(aes(colour=rho), labelon=TRUE, vjust = -0.5)
+p + geom_net(aes(colour=rho, linetype = group_to, label = from_id),  
+             vjust=-0.5, labelcolour="black", directed=TRUE) + 
+     theme_net()
+p + geom_net(colour = "orange", layout.alg = 'circle', size = 6)
+p + geom_net(colour = "orange", layout.alg = 'circle', size = 6, linewidth=.75)
+p + geom_net(colour = "orange", layout.alg = 'circle', size = 0, linewidth=.75,
              directed = TRUE)
 p + geom_net(aes(size=Predominance, colour=rho, shape=rho, linetype=group_to),
-             linewidth=0.75, label =TRUE, labelcolour="black") +
+             linewidth=0.75, labelon =TRUE, labelcolour="black") +
     facet_wrap(~Ethnicity) +
     scale_colour_brewer(palette="Set2")
 gg <- ggplot(data = blood$edges, aes(from_id = from, to_id = to)) +
-  geom_net(colour = "darkred", layout = "circle", label = TRUE, size = 15,
+  geom_net(colour = "darkred", layout.alg = "circle", labelon=TRUE, size = 15,
          directed = TRUE, vjust = 0.5, labelcolour = "grey80",
          arrowsize = 1.5, linewidth = 0.5, arrowgap = 0.05,
-         selfies = TRUE, ecolour = "grey40") +
+         selfloops = TRUE, ecolour = "grey40") +
   theme_net()
 gg
 dframe <- ggplot_build(gg)$data[[1]] # contains calculated node and edge values
 
 #Madmen Relationships
 data(madmen)
-MMnet <- merge(madmen$edges, madmen$vertices, by.x="Name1", by.y="label", all=TRUE)
-p <- ggplot(data = MMnet, aes(from_id = Name1, to_id = Name2))
-p + geom_net(label=TRUE)
-p + geom_net(aes(colour=Gender), size=6, linewidth=1, label=TRUE, fontsize=3, labelcolour="black")
-p + geom_net(aes(colour=Gender), size=6, linewidth=1, label=TRUE, labelcolour="black") +
+MMnet <- fortify(as.edgedf(madmen$edges), madmen$vertices)
+p <- ggplot(data = MMnet, aes(from_id = from_id, to_id = to_id))
+p + geom_net(labelon=TRUE)
+p + geom_net(aes(colour=Gender), size=6, linewidth=1, labelon=TRUE, fontsize=3, labelcolour="black")
+p + geom_net(aes(colour=Gender), size=6, linewidth=1, labelon=TRUE, labelcolour="black") +
     scale_colour_manual(values=c("#FF69B4", "#0099ff")) + xlim(c(-.05,1.05))
-p + geom_net(aes(colour=Gender), size=6, linewidth=1, directed=TRUE, label=TRUE,
+p + geom_net(aes(colour=Gender), size=6, linewidth=1, directed=TRUE, labelon=TRUE,
              arrowgap=0.01, labelcolour="black") +
     scale_colour_manual(values=c("#FF69B4", "#0099ff")) + xlim(c(-.05,1.05))
 
-p <- ggplot(data = MMnet, aes(from_id = Name1, to_id = Name2))
-# alternative labelling: specify label variable.
+p <- ggplot(data = MMnet, aes(from_id = from_id, to_id = to_id))
+# alternative labelling: specify label aesthetic.
 p + geom_net(aes(colour=Gender, label=Gender), size=6, linewidth=1, fontsize=3,
              labelcolour="black")
 
 ## visualizing ggplot2 theme elements
 data(theme_elements)
-TEnet <- merge(theme_elements$edges, theme_elements$vertices, by.x="parent",
-               by.y="name", all=TRUE)
-ggplot(data = TEnet, aes(from_id = parent, to_id = child)) +
-  geom_net(label=TRUE, vjust=-0.5)
-
+TEnet <- fortify(as.edgedf(theme_elements$edges[,c(2,1)]), theme_elements$vertices)
+ggplot(data = TEnet, aes(from_id = from_id, to_id = to_id)) +
+  geom_net(labelon=TRUE, vjust=-0.5)
 
 ## emails example from VastChallenge 2014
 # care has to be taken to make sure that for each panel all nodes are included with
 # the necessary information.
 # Otherwise line segments show on the plot without nodes.
-
-data(email)
-employee <- data.frame(expand.grid(
-              label=unique(email$nodes$label), day=unique(email$edges$day)))
-employee <- merge(employee, email$nodes, by="label")
-emailnet <- merge(subset(email$edges, nrecipients < 54), employee,
-                  by.x=c("From", "day"), by.y=c("label", "day"), all=TRUE)
-
+emailedges <- as.edgedf(subset(email$edges, nrecipients < 54))
+emailnet <- fortify(emailedges, email$nodes)
 #no facets
-ggplot(data = emailnet, aes(from_id = From, to_id = to)) +
+ggplot(data = emailnet, aes(from_id = from_id, to_id = to_id)) +
   geom_net(aes(colour= CurrentEmploymentType), linewidth=0.5) +
   scale_colour_brewer(palette="Set2")
 #facet by day
-ggplot(data = emailnet, aes(from_id = From, to_id = to)) +
+
+emailnet <- fortify(emailedges, email$nodes, group = "day")
+ggplot(data = emailnet, aes(from_id = from, to_id = to_id)) +
   geom_net(aes(colour= CurrentEmploymentType), linewidth=0.5, fiteach=TRUE) +
   scale_colour_brewer(palette="Set2") +
   facet_wrap(~day, nrow=2) + theme(legend.position="bottom")
-ggplot(data = emailnet, aes(from_id = From, to_id = to)) +
+ggplot(data = emailnet, aes(from_id = from, to_id = to_id)) +
   geom_net(aes(colour= CitizenshipCountry), linewidth=0.5, fiteach=TRUE) +
   scale_colour_brewer(palette="Set2") +
   facet_wrap(~day, nrow=2) + theme(legend.position="bottom")
-ggplot(data = emailnet, aes(from_id = From, to_id = to)) +
+ggplot(data = emailnet, aes(from_id = from, to_id = to_id)) +
   geom_net(aes(colour= CurrentEmploymentType), linewidth=0.5, fiteach=FALSE) +
   scale_colour_brewer(palette="Set2") +
   facet_wrap(~day, nrow=2) + theme(legend.position="bottom")
 
 ## Les Miserables example
-
 data(lesmis)
-lesmisnet <- merge(lesmis$edges, lesmis$vertices, by.x="from", by.y="label", all=TRUE)
-p <- ggplot(data=lesmisnet, aes(from_id=from, to_id=to))
-p + geom_net(layout="fruchtermanreingold")
-p + geom_net(layout="fruchtermanreingold", label=TRUE, vjust=-0.5)
-p + geom_net(layout="fruchtermanreingold", label=TRUE, vjust=-0.5, aes(linewidth=degree/5))
+lesmisnet <- fortify(as.edgedf(lesmis$edges), lesmis$vertices[, c(2,1)])
+p <- ggplot(data=lesmisnet, aes(from_id=from_id, to_id=to_id))
+p + geom_net(layout.alg="fruchtermanreingold")
+p + geom_net(layout.alg="fruchtermanreingold", labelon=TRUE, vjust=-0.5)
+p + geom_net(layout.alg="fruchtermanreingold", labelon=TRUE, vjust=-0.5,
+    aes(linewidth=degree/5))
 
 ## College Football Games in the Fall 2000 regular season
-# Hello world!
-# Source: http://www-personal.umich.edu/~mejn/netdata/
+# Source: http://www-/personal.umich.edu/~mejn/netdata/
 data(football)
-ftnet <- merge(football$edges, football$vertices, by.x="from", by.y="label", all=TRUE)
-p <- ggplot(data=ftnet, aes(from_id=from, to_id=to))
+ftnet <- fortify(as.edgedf(football$edges), football$vertices)
+p <- ggplot(data=ftnet, aes(from_id=from_id, to_id=to_id))
 p + geom_net(aes(colour=value), linewidth=0.75, size=4.5, ecolour="grey80") +
   scale_colour_brewer("Conference", palette="Paired") + theme_net() +
   theme(legend.position="bottom")

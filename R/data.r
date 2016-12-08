@@ -15,7 +15,7 @@
 #'   \item n: Number of trips between the two stations
 #'   \item minlength: Duration of shortest trip between the two stations (in seconds). Only those stations are included, if the shortest trip between them lasted not more than 15 minutes.
 #' }
-#' 
+#'
 #' \item the vertices data set consists of five variables with information on 21 stations:
 #' \itemize{
 #'   \item id: Station ID number
@@ -122,23 +122,24 @@
 #' # label independent schools
 #' ftnet$schools <- ifelse(ftnet$value == "Independents", ftnet$from, "")
 #'
+#' library(geomnet)
+#' library(dplyr)
 #' # create data plot
 #' ggplot(data = ftnet,
 #'        aes(from_id = from, to_id = to)) +
 #'   geom_net(
 #'     aes(
 #'       colour = value, group = value,
-#'       linetype = factor(same.conf != 1),
+#'       linetype = factor(1-same.conf),
 #'       label = schools
 #'     ),
 #'     linewidth = 0.5,
 #'     size = 5, vjust = -0.75, alpha = 0.3,
-#'     layout = 'fruchtermanreingold'
+#'     layout.alg = 'fruchtermanreingold'
 #'   ) +
 #'   theme_net() +
 #'   theme(legend.position = "bottom") +
-#'   scale_colour_brewer("Conference", palette = "Paired")  +
-#'   guides(linetype = FALSE)
+#'   scale_colour_brewer("Conference", palette = "Paired")
 "football"
 
 #' Coappearance network of characters in Les Miserables (undirected)
@@ -168,11 +169,14 @@
 #' lesmisnet$degree[is.na(lesmisnet$degree)] <- 0
 #'
 #' # create plot
+#' library(geomnet)
+#' library(dplyr)
+#'
 #' ggplot(data = lesmisnet, aes(from_id = from, to_id = to,
 #'                              linewidth = degree / 5 + 0.1 )) +
 #'   geom_net(aes(size = degree, alpha = degree),
 #'            colour = "grey30", ecolour = "grey60",
-#'            layout = "fruchtermanreingold", label = TRUE, vjust = -0.75) +
+#'            layout.alg = "fruchtermanreingold", labelon = TRUE, vjust = -0.75) +
 #'   scale_alpha(range = c(0.3, 1)) +
 #'   theme_net()
 "lesmis"
@@ -203,10 +207,10 @@
 #'
 #' A dataset containing information to draw a map of Rockville, MD, and vicinity using \code{ggmap}.
 #' This information was pulled from Google Maps using the \pkg{ggmap} package.
-#' 
+#'
 #' @references D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2.
-#' The R Journal, 5(1), 144-161. \url{http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf}
-#' @format An object of class "ggmap" and "raster" containing a map of the Rockville, MD, area. 
+#' The R Journal, 5(1), 144-161. \url{https://journal.r-project.org/archive/2013-1/kahle-wickham.pdf}
+#' @format An object of class "ggmap" and "raster" containing a map of the Rockville, MD, area.
 #' @examples
 #' \dontrun{
 #' library(ggmap)
@@ -223,7 +227,7 @@
 #' The variables are as follows:
 #'
 #' @references Winston Chang (2012). gcookbook: Data for "R Graphics Cookbook". R package
-#' version 1.0. \url{http://CRAN.R-project.org/package=gcookbook}
+#' version 1.0. \url{https://CRAN.R-project.org/package=gcookbook}
 #' @format A list of two data frames:
 #' \itemize{
 #' \item the edges data set consists of two variables of length 87:
@@ -286,10 +290,12 @@
 #' # prep the data
 #' soccernet <- merge(soccer$edges, soccer$vertices, by.x = "home",
 #'                    by.y = "label", all = TRUE)
-#'
+#' library(geomnet)
+#' library(dplyr)
 #' # create plot
 #' ggplot(data = soccernet, aes(from_id = home, to_id = away)) +
-#'   geom_net(aes(colour = div, group = div), ealpha = .25, layout = 'fruchtermanreingold') +
+#'   geom_net(aes(colour = div, group = div), ealpha = .25,
+#'            layout.alg = 'fruchtermanreingold') +
 #'   facet_wrap(~season) +
 #'   theme_net()
 "soccer"
