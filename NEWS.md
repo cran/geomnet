@@ -1,3 +1,16 @@
+# geomnet 0.3.1
+
+- Update to fix changes in dplyr - specifically use `dplyr::n()`
+- Use `inhereits(dat, "matrix")` instead of `class(x) =! "matrix"`
+- Adds spell check WORDLIST
+
+# geomnet 0.3.0
+
+Update to account for changes in ggplot2 version 3.0.0
+- website added
+- vignette added
+- minor bug fixes
+
 # geomnet 0.2.0
 
 This version of geomnet has been updated to account for changes in ggplot2 version 2.2.0.

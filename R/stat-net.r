@@ -73,7 +73,7 @@ compute_network = function(data, layout.alg="kamadakawai", layout.par=list(), si
     edges <- edges[!edges$from_id %in% true_singletons,]
   }
   edges <- dplyr::group_by(edges, from_id, to_id)
-  edges <- dplyr::summarise(edges, wt = n())
+  edges <- dplyr::summarise(edges, wt = dplyr::n())
 
     # there should not be any missing values at this point, but just make sure
   if (any(is.na(edges$from_id))) message(sprintf("%d missing values excluded\n", sum(is.na(edges$from_id))))
@@ -130,7 +130,8 @@ compute_network = function(data, layout.alg="kamadakawai", layout.par=list(), si
 
     edges <- rbind(edges, fromonly[, names(edges)])
   }
-  edges <- mutate(group_by(edges, from, to), weight = n())
+
+  edges <- mutate(group_by(edges, from, to), weight = dplyr::n())
   unique(edges)
 },
 
@@ -147,7 +148,7 @@ compute_panel = function(self, data, scales, na.rm = FALSE,
       data <- mutate(group_by(data, group), .samegroup = to %in% unique(from))
     }
 
-   # #browser()
+#    browser()
     data.frame(data)
   },
 

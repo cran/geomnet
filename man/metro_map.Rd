@@ -4,7 +4,9 @@
 \name{metro_map}
 \alias{metro_map}
 \title{Map of Washington DC Metro area}
-\format{An object of class "ggmap" and "raster" containing a map of the Rockville, MD, area.}
+\format{
+An object of class "ggmap" and "raster" containing a map of the Rockville, MD, area.
+}
 \usage{
 metro_map
 }
@@ -24,4 +26,3 @@ D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2.
 The R Journal, 5(1), 144-161. \url{https://journal.r-project.org/archive/2013-1/kahle-wickham.pdf}
 }
 \keyword{datasets}
-

@@ -1,11 +1,11 @@
 #' Bike sharing network (directed)
 #'
-#' This network is a summary of the bike trips taken by customers of the bike sharing company Capital Bikeshare (\url{https://secure.capitalbikeshare.com/}) during the second quarter of 2015.
+#' This network is a summary of the bike trips taken by customers of the bike sharing company Capital Bikeshare (\url{https://secure.capitalbikeshare.com/profile/}) during the second quarter of 2015.
 #' Only trips between stations in the vicinity of Rockville, MD, are included.
 #' The data is organized as a list of two datasets, vertices (stations) and edges (trips between stations),
 #' as follows:
 #'
-#' @references \url{https://secure.capitalbikeshare.com/}
+#' @references \url{https://secure.capitalbikeshare.com/profile/}
 #' @format A list of two data frames:
 #' \itemize{
 #' \item the trips data set consists of four variables of length 53:
@@ -53,7 +53,7 @@
 #' Email network (directed)
 #'
 #' A list of two datasets, vertices and edges, containing data on employees and (fictitious)
-#' email headers from two weeks of internal GAStech company email between employees made available as part of the VAST challenge 2014 (K. Cook, G. Grinstein, M. Whiting, see \url{http://hcil2.cs.umd.edu/newvarepository/benchmarks.php}).
+#' email headers from two weeks of internal GAStech company email between employees made available as part of the VAST challenge 2014 (K. Cook, G. Grinstein, M. Whiting, see \url{http://www.cs.umd.edu/hcil/varepository/benchmarks.php}).
 #' The variables are as follows:
 #'
 #' @format A list of two data frames:
@@ -142,9 +142,9 @@
 #'   scale_colour_brewer("Conference", palette = "Paired")
 "football"
 
-#' Coappearance network of characters in Les Miserables (undirected)
+#' Co-appearance network of characters in Les Miserables (undirected)
 #'
-#' A list of two datasets, vertices and edges, containing data on characters and their coapperance in chapters in Victor Hugo's Les Miserables.
+#' A list of two datasets, vertices and edges, containing data on characters and their co-appearance in chapters in Victor Hugo's Les Miserables.
 #' The variables are as follows:
 #'
 #' @references D. E. Knuth, The Stanford GraphBase: A Platform for Combinatorial Computing, Addison-Wesley, Reading, MA (1993).
@@ -245,7 +245,7 @@
 
 #' A protein interaction network (undirected)
 #'
-#' A list of two datasets, vertices and edges, containing data on the complete protein-protein interaction network in the yeast species S. cerevisiae (\url{http://www3.nd.edu/~networks/resources.htm}).
+#' A list of two datasets, vertices and edges, containing data on the complete protein-protein interaction network in the yeast species S. cerevisiae (\url{https://snap.stanford.edu/data/S-cerevisiae.html}).
 #' The variables are as follows:
 #' @references H. Jeong, S. Mason, A.L. Barabasi and Z.N. Oltvai, Centrality and lethality of protein networks Nature 411, 41 (2001)
 #' @format A list of two data frames:
@@ -302,7 +302,7 @@
 
 #' \pkg{ggplot2} theme attribute inheritance network (directed)
 #'
-#' A list of two datasets, vertices and edges, containing data on the inheritance structure of theme elements in \pkg{ggplot2} (see \url{http://docs.ggplot2.org/current/theme.html})
+#' A list of two datasets, vertices and edges, containing data on the inheritance structure of theme elements in \pkg{ggplot2} (see \url{https://ggplot2.tidyverse.org/reference/theme.html})
 #' The variables are as follows:
 #'
 #' @format A list of two data frames:

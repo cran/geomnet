@@ -4,7 +4,8 @@
 \name{bikes}
 \alias{bikes}
 \title{Bike sharing network (directed)}
-\format{A list of two data frames:
+\format{
+A list of two data frames:
 \itemize{
 \item the trips data set consists of four variables of length 53:
 \itemize{
@@ -22,18 +23,18 @@
   \item long: Longitude of station location
   \item nbDocks: Number of bike docks at the station
 }
-}}
+}
+}
 \usage{
 bikes
 }
 \description{
-This network is a summary of the bike trips taken by customers of the bike sharing company Capital Bikeshare (\url{https://secure.capitalbikeshare.com/}) during the second quarter of 2015.
+This network is a summary of the bike trips taken by customers of the bike sharing company Capital Bikeshare (\url{https://secure.capitalbikeshare.com/profile/}) during the second quarter of 2015.
 Only trips between stations in the vicinity of Rockville, MD, are included.
 The data is organized as a list of two datasets, vertices (stations) and edges (trips between stations),
 as follows:
 }
 \references{
-\url{https://secure.capitalbikeshare.com/}
+\url{https://secure.capitalbikeshare.com/profile/}
 }
 \keyword{datasets}
-

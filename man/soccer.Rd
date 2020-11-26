@@ -4,7 +4,8 @@
 \name{soccer}
 \alias{soccer}
 \title{High school boys' soccer games in Iowa (undirected)}
-\format{A list of two data frames:
+\format{
+A list of two data frames:
 \itemize{
 \item the edges data set consists of 11 variables of length 4484:
 \itemize{
@@ -25,7 +26,8 @@
   \item div: Factor variable with division school is in (1, 2, or 3A)
   \item label: Factor variable with school name
 }
-}}
+}
+}
 \usage{
 soccer
 }
@@ -48,4 +50,3 @@ ggplot(data = soccernet, aes(from_id = home, to_id = away)) +
   theme_net()
 }
 \keyword{datasets}
-

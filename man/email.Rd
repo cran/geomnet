@@ -4,7 +4,8 @@
 \name{email}
 \alias{email}
 \title{Email network (directed)}
-\format{A list of two data frames:
+\format{
+A list of two data frames:
 \itemize{
 \item the edges data set consists of ten variables of length 9063:
 \itemize{
@@ -38,14 +39,14 @@
   \item MilitaryServiceBranch: Branch of the (fictional) military in which the employee serves
   \item MilitaryDischargeType: General or honorable discharge from military service?
 }
-}}
+}
+}
 \usage{
 email
 }
 \description{
 A list of two datasets, vertices and edges, containing data on employees and (fictitious)
-email headers from two weeks of internal GAStech company email between employees made available as part of the VAST challenge 2014 (K. Cook, G. Grinstein, M. Whiting, see \url{http://hcil2.cs.umd.edu/newvarepository/benchmarks.php}).
+email headers from two weeks of internal GAStech company email between employees made available as part of the VAST challenge 2014 (K. Cook, G. Grinstein, M. Whiting, see \url{http://www.cs.umd.edu/hcil/varepository/benchmarks.php}).
 The variables are as follows:
 }
 \keyword{datasets}
-

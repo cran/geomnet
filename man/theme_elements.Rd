@@ -4,7 +4,8 @@
 \name{theme_elements}
 \alias{theme_elements}
 \title{\pkg{ggplot2} theme attribute inheritance network (directed)}
-\format{A list of two data frames:
+\format{
+A list of two data frames:
 \itemize{
 \item the edges data frame consists of two variables of length 48:
 \itemize{
@@ -15,13 +16,13 @@
 \itemize{
   \item name: Name of the theme element
 }
-}}
+}
+}
 \usage{
 theme_elements
 }
 \description{
-A list of two datasets, vertices and edges, containing data on the inheritance structure of theme elements in \pkg{ggplot2} (see \url{http://docs.ggplot2.org/current/theme.html})
+A list of two datasets, vertices and edges, containing data on the inheritance structure of theme elements in \pkg{ggplot2} (see \url{https://ggplot2.tidyverse.org/reference/theme.html})
 The variables are as follows:
 }
 \keyword{datasets}
-
